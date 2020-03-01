@@ -1,5 +1,6 @@
 import sys
 import numpy as np
+import math
 
 import obspy
 from obspy.signal.trigger import classic_sta_lta
@@ -24,7 +25,6 @@ def convert(seconds):
 
     return "%d:%02d:%02d" % (hour, minutes, seconds)
 
-print(convert(12345678900))
 
 st = obspy.Stream()
 cwd = os.getcwd()
@@ -80,21 +80,23 @@ plt.show()
 
 #Getting the trigger
 trig = classic_sta_lta(tr_filt.data, int(5 * df), int(10 * df))
-plot_trigger(tr_filt, trig, 1.45, 0.60)
+#plot_trigger(tr_filt, trig, 1.45, 0.60)
 
 #Getting a list of trigger start and end times
 time_list_on = (obspy.signal.trigger.trigger_onset(trig, 1.45, 0.65, max_len=9e+99)/df)[:,0]
 time_list_off = (obspy.signal.trigger.trigger_onset(trig, 1.45, 0.65, max_len=9e+99)/df)[:,1]
 
-
-dt2 = []
-ft2 = []
-st3 = []
+max_amp_list = []
 
 
 for i in range(len(time_list_on)):
-    print(str(i))
-    dt2.append(dt + time_list_on[i])
-    ft2.append(dt + time_list_off[i])
-    st3.append(st2.slice(starttime = dt2[i], endtime = ft2[i]))
-    st3[i].plot()
+    #print(str(i))
+    dt2 = (dt + time_list_on[i])
+    ft2 = (dt + time_list_off[i])
+
+    st3 = st2.slice(starttime = dt2, endtime = ft2)
+    tr3 = st3[0]
+    #max_amp_list.append((tr3.max()))
+    waveform_data = (tr3.data)
+    rms = math.sqrt(np.sum(waveform_data**2)/tr3.stats.npts)
+    print(rms)
