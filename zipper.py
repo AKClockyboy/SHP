@@ -64,7 +64,6 @@ st2 = st2.slice(starttime = dt, endtime = ft)
 #
 #list and counters
 #
-
 max_amp_list = []
 rms_list = []
 var_list = []
@@ -78,7 +77,7 @@ second_count = 0 #counter for seconds
 number_of_blips = 0
 
 #
-#looping ove
+#looping over
 #
 for i in range(len(st2)):
 
@@ -105,37 +104,41 @@ for i in range(len(st2)):
     plt.show()
     """
 
+    #
     #Getting the trigger
+    #
     trig = classic_sta_lta(tr_filt.data, int(5 * df), int(10 * df))
     #plot_trigger(tr_filt, trig, 1.6, 0.65)
 
+    #
     #Getting a list of trigger start and end times
+    #
     time_list_on = []
     time_list_off = []
     time_list = (obspy.signal.trigger.trigger_onset(trig, 1.6, 0.65, max_len=9e+99))
-
-
-
     for i in range(len(time_list)):
         time_list_on.append(time_list[i][0])
         time_list_off.append(time_list[i][1])
 
+
     blip_list.append(len(time_list_on))
     number_of_blips += len(time_list_on)
-    total_blip_list.append(number_of_blips)
+    total_blip_list.append(number_of_blips) #Counting number of blips
 
+    #
+    #now we loop over all the events
+    #
     for i in range(len(time_list_on)):
-
         dt2 = (dt + time_list_on[i]/df)
         ft2 = (dt + time_list_off[i]/df)
 
         second_count += (dt2.second)*0.67
 
-        final_time_list.append(second_count)
+        final_time_list.append(second_count*10)
         st3 = st2.slice(starttime = dt2, endtime = ft2)
         tr3 = st3[0]
 
-        waveform_data = (tr3.data) #Check that this is the amplitude
+        waveform_data = (tr3.data)
 
         max_amp_list.append(abs(tr3.max()))
         rms_list.append(np.sqrt(np.mean(waveform_data**2)))
@@ -144,7 +147,7 @@ for i in range(len(st2)):
     dt = dt2
     ft = ft2 #resetting the times
 
-"""#RMS Values Plotting
+#RMS Values Plotting
 plt.scatter(final_time_list, rms_list, c ='crimson')
 plt.xlabel("Time in Seconds from _____")
 plt.ylabel("RMS")
@@ -161,10 +164,10 @@ plt.scatter(rms_list, max_amp_list, c = 'crimson')
 plt.xlabel("RMS")
 plt.ylabel("Maximum amplitude")
 plt.show()
-"""
+
 #total_blip_list plot
-plt.scatter(i_list, blip_list, c = 'r', label = "Number of events at given time")
-plt.plot(i_list, total_blip_list, c = 'g', label = "Total Events")
+plt.scatter(i_list, blip_list, label="Number of events at given time", c = 'r')
+plt.plot(i_list, total_blip_list, label="Total Events", c = 'g')
 plt.xlabel("Time")
 plt.ylabel("Event Number")
 plt.show()
