@@ -46,14 +46,11 @@ for filename in os.listdir(cwd):
     if filename.endswith('.htm'):
         st += read(filename)
 
-
 #
 #Getting stream using select
 #
 st2 = st.select(station = "MBGE", component = 'Z')
 #print(st2.__str__(extended=True))
-
-
 
 
 #
@@ -63,15 +60,16 @@ dt = obspy.UTCDateTime("1997-02-13T00:00:00")
 
 print("dt is: " + str(dt))
 
-ft = dt + 86400
+ft  = obspy.UTCDateTime("1997-02-14T00:00:00")
 
 print("ft is: " + str(ft))
 
 dt_in_seconds = dt.second
 
 st2 = st2.slice(starttime = dt, endtime = ft)
+print(st2)
 st2.merge(fill_value = 'interpolate')
-
+st2.split()
 
 total_blip_list = [] #Total number of events at each point
 blip_list = [] #Number of events in a given window of time
@@ -81,6 +79,7 @@ i_list = [] #number of times we loop
 second_count = 0 #counter for seconds
 number_of_blips = 0
 
+print(st2)
 
 tr_filt = st2[0]
 df = tr_filt.stats.sampling_rate
@@ -106,9 +105,9 @@ plt.show()
 #Getting the trigger
 #
 trig = classic_sta_lta(tr_filt.data, int(5 * df), int(10 * df))
-plot_trigger(tr_filt, trig, 1.62, 0.65)
+plot_trigger(tr_filt, trig, 1.63, 0.65)
 
-n_picks = len(obspy.signal.trigger.trigger_onset(trig, 1.6, 0.65, max_len=9e+99))
+n_picks = len(obspy.signal.trigger.trigger_onset(trig, 1.63, 0.65, max_len=9e+99))
 
 max_amp_list = np.zeros(n_picks)
 
@@ -125,7 +124,7 @@ print(trig)
 
 for pick in range(n_picks):
 
-    start = (obspy.signal.trigger.trigger_onset(trig, 1.6, 0.65, max_len=9e+99)[pick][0])/df
+    start = (obspy.signal.trigger.trigger_onset(trig, 1.63, 0.65, max_len=9e+99)[pick][0])/df
 
     start = dt + start
 
@@ -134,8 +133,6 @@ for pick in range(n_picks):
     event = event.detrend('demean')
 
     final_time_list[pick] = mdates.date2num(start.datetime)
-
-    print(final_time_list[pick])
 
     max_amp_list[pick] = np.absolute(event[0]).max()
 
@@ -163,6 +160,11 @@ plt.title("Day 3 RMS/AMP")
 plt.xlabel("RMS")
 plt.ylabel("Maximum amplitude")
 plt.show()
+
+np.save("Day 3 Time List", final_time_list)
+np.save("Day 3 RMS List", rms_list)
+np.save("Day 3 MAXAMP List", max_amp_list)
+np.save("Day 3 Variance List", var_list)
 
 """
 #total_blip_list plot

@@ -126,7 +126,7 @@ for i in range(len(st2)):
 
 #total_blip_list plot
 fig,ax = plt.subplots()
-plt.title("Timeseries")
+plt.title("Day 3 Timeseries")
 ax.bar(i_list, blip_list, width = 1200, align = 'edge', color = 'purple')
 ax.set_xlabel("time",fontsize=14)
 ax.set_ylabel("Number of Events per 20min",color="purple",fontsize=14)
@@ -136,3 +136,7 @@ ax2=ax.twinx()
 ax2.plot(i_list, total_blip_list, label="Total Events", c = 'k')
 ax2.set_ylabel("Total Number of Events",color="k",fontsize=14)
 plt.show()
+
+np.save("Day 3 - Events Per 20min", blip_list)
+np.save("Day 3 - Total Events", total_blip_list)
+np.save("Day 3 - Time For Events", i_list)
