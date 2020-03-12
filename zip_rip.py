@@ -48,13 +48,13 @@ for filename in os.listdir(cwd):
 #
 #Getting stream using select
 #
-st2 = st.select(station = "MBGE", component = 'Z')
+st2 = st.select(station = "MBGA", component = 'Z')
 #print(st2.__str__(extended=True))
 
 #
 #Selecting start time and slicing, so we only look at one days worth of data
 #
-dt = obspy.UTCDateTime("1997-02-13T00:00:00")
+dt = obspy.UTCDateTime("1997-02-12T00:00:00")
 print("dt is: " + str(dt))
 ft = dt + 86400
 print("ft is: " + str(ft))
@@ -124,19 +124,21 @@ for i in range(len(st2)):
     total_blip_list.append(number_of_blips) #Counting number of blips
 
 
+data = np.load("Day 2 MAXAMP List.npy", 'r')
+
 #total_blip_list plot
 fig,ax = plt.subplots()
-plt.title("Day 3 Timeseries")
+plt.title("Day 2 Timeseries")
 ax.bar(i_list, blip_list, width = 1200, align = 'edge', color = 'purple')
 ax.set_xlabel("time",fontsize=14)
 ax.set_ylabel("Number of Events per 20min",color="purple",fontsize=14)
 
 # twin object for two different y-axis on the sample plot
 ax2=ax.twinx()
-ax2.plot(i_list, total_blip_list, label="Total Events", c = 'k')
+ax2.scatter(i_list, total_blip_list, label="Total Events", s = data/100, c = 'k')
 ax2.set_ylabel("Total Number of Events",color="k",fontsize=14)
 plt.show()
 
-np.save("Day 3 - Events Per 20min", blip_list)
-np.save("Day 3 - Total Events", total_blip_list)
-np.save("Day 3 - Time For Events", i_list)
+np.save("Day 2 - Events Per 20min", blip_list)
+np.save("Day 2 - Total Events", total_blip_list)
+np.save("Day 2 - Time For Events", i_list)

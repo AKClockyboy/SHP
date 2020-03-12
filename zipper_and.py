@@ -45,22 +45,21 @@ files = os.listdir(cwd)
 for filename in os.listdir(cwd):
     if filename.endswith('.htm'):
         st += read(filename)
-
+print(st.__str__(extended=True))
 #
 #Getting stream using select
 #
 st2 = st.select(station = "MBGE", component = 'Z')
 #print(st2.__str__(extended=True))
 
-
 #
 #Selecting start time and slicing, so we only look at one days worth of data
 #
-dt = obspy.UTCDateTime("1997-02-13T00:00:00")
+dt = obspy.UTCDateTime("1997-02-12T00:00:00")
 
 print("dt is: " + str(dt))
 
-ft  = obspy.UTCDateTime("1997-02-14T00:00:00")
+ft  = obspy.UTCDateTime("1997-02-13T00:00:00")
 
 print("ft is: " + str(ft))
 
@@ -70,6 +69,12 @@ st2 = st2.slice(starttime = dt, endtime = ft)
 print(st2)
 st2.merge(fill_value = 'interpolate')
 st2.split()
+
+#
+#Dayplot
+#
+#st2.plot(type="dayplot", interval=60, title = "Day 1 Plot for MBGA Station", right_vertical_labels=False, vertical_scaling_range=5e3, one_tick_per_line=True, color=['k', 'r', 'b', 'g'], show_y_UTC_label=False, events={'min_magnitude': 6.5})
+
 
 total_blip_list = [] #Total number of events at each point
 blip_list = [] #Number of events in a given window of time
@@ -85,7 +90,7 @@ tr_filt = st2[0]
 df = tr_filt.stats.sampling_rate
 
 #Spectrogram Plotter
-#st2.plot()
+st2.plot()
 #st2.spectrogram(log=False, title='MBGE STATION' + str(st[0].stats.starttime))
 
 #bandpass filter
@@ -105,9 +110,9 @@ plt.show()
 #Getting the trigger
 #
 trig = classic_sta_lta(tr_filt.data, int(5 * df), int(10 * df))
-plot_trigger(tr_filt, trig, 1.63, 0.65)
+plot_trigger(tr_filt, trig, 1.65, 0.65)
 
-n_picks = len(obspy.signal.trigger.trigger_onset(trig, 1.63, 0.65, max_len=9e+99))
+n_picks = len(obspy.signal.trigger.trigger_onset(trig, 1.65, 0.65, max_len=9e+99))
 
 max_amp_list = np.zeros(n_picks)
 
@@ -124,7 +129,7 @@ print(trig)
 
 for pick in range(n_picks):
 
-    start = (obspy.signal.trigger.trigger_onset(trig, 1.63, 0.65, max_len=9e+99)[pick][0])/df
+    start = (obspy.signal.trigger.trigger_onset(trig, 1.65, 0.65, max_len=9e+99)[pick][0])/df
 
     start = dt + start
 
@@ -132,39 +137,39 @@ for pick in range(n_picks):
     event = event.split()
     event = event.detrend('demean')
 
-    final_time_list[pick] = mdates.date2num(start.datetime)
+    #final_time_list[pick] = mdates.date2num(start.datetime)
 
     max_amp_list[pick] = np.absolute(event[0]).max()
 
-    rms_list[pick] = np.sqrt(np.mean(np.square(event[0])))
+    #rms_list[pick] = np.sqrt(np.mean(np.square(event[0])))
 
-    var_list[pick] = np.var(event[0])
+    #var_list[pick] = np.var(event[0])
 
 #RMS Values Plotting
-plt.plot_date(final_time_list, rms_list, c ='crimson', xdate = True)
-plt.title("Day 3 RMS/Time")
+"""plt.plot_date(final_time_list, rms_list, c ='crimson', xdate = True)
+plt.title("Day 2 10:30 RMS/Time")
 plt.xlabel("Time")
 plt.ylabel("RMS")
 plt.show()
 
 #Variance Plotting
 plt.plot_date(final_time_list, var_list, c ='crimson', xdate = True)
-plt.title("Day 3 Var/Time")
+plt.title("Day 2 10:30 Var/Time")
 plt.xlabel("Time")
 plt.ylabel("Var")
 plt.show()
 
 #RMS vs Max Amp
 plt.scatter(rms_list, max_amp_list, c = 'crimson')
-plt.title("Day 3 RMS/AMP")
+plt.title("Day 2 10:30 RMS/AMP")
 plt.xlabel("RMS")
 plt.ylabel("Maximum amplitude")
 plt.show()
-
-np.save("Day 3 Time List", final_time_list)
-np.save("Day 3 RMS List", rms_list)
-np.save("Day 3 MAXAMP List", max_amp_list)
-np.save("Day 3 Variance List", var_list)
+"""
+#np.save("Day 2 10 Time List", final_time_list)
+#np.save("Day 2 10 RMS List", rms_list)
+np.save("Day 2 10 MAXAMP List", max_amp_list)
+#np.save("Day 2 10 Variance List", var_list)
 
 """
 #total_blip_list plot
