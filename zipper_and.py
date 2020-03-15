@@ -55,11 +55,11 @@ st2 = st.select(station = "MBGE", component = 'Z')
 #
 #Selecting start time and slicing, so we only look at one days worth of data
 #
-dt = obspy.UTCDateTime("1997-02-12T00:00:00")
+dt = obspy.UTCDateTime("1997-02-12T10:20:00")
 
 print("dt is: " + str(dt))
 
-ft  = obspy.UTCDateTime("1997-02-13T00:00:00")
+ft  = obspy.UTCDateTime("1997-02-12T12:30:00")
 
 print("ft is: " + str(ft))
 
@@ -110,9 +110,9 @@ plt.show()
 #Getting the trigger
 #
 trig = classic_sta_lta(tr_filt.data, int(5 * df), int(10 * df))
-plot_trigger(tr_filt, trig, 1.65, 0.65)
+plot_trigger(tr_filt, trig, 1.65, 1.61)
 
-n_picks = len(obspy.signal.trigger.trigger_onset(trig, 1.65, 0.65, max_len=9e+99))
+n_picks = len(obspy.signal.trigger.trigger_onset(trig, 1.65, 1.61, max_len=9e+99))
 
 max_amp_list = np.zeros(n_picks)
 
@@ -129,24 +129,25 @@ print(trig)
 
 for pick in range(n_picks):
 
-    start = (obspy.signal.trigger.trigger_onset(trig, 1.65, 0.65, max_len=9e+99)[pick][0])/df
+    start = (obspy.signal.trigger.trigger_onset(trig, 1.65, 1.61, max_len=9e+99)[pick][0])/df
 
     start = dt + start
 
-    event = st2.slice(starttime = start - 2, endtime = start + 10)
+    event = st2.slice(starttime= start - 2, endtime = start + 10)
     event = event.split()
     event = event.detrend('demean')
 
-    #final_time_list[pick] = mdates.date2num(start.datetime)
+    final_time_list[pick] = mdates.date2num(start.datetime)
 
     max_amp_list[pick] = np.absolute(event[0]).max()
 
-    #rms_list[pick] = np.sqrt(np.mean(np.square(event[0])))
+    rms_list[pick] = np.sqrt(np.mean(np.square(event[0])))
 
-    #var_list[pick] = np.var(event[0])
+    var_list[pick] = np.var(event[0])
 
+"""
 #RMS Values Plotting
-"""plt.plot_date(final_time_list, rms_list, c ='crimson', xdate = True)
+plt.plot_date(final_time_list, rms_list, c ='crimson', xdate = True)
 plt.title("Day 2 10:30 RMS/Time")
 plt.xlabel("Time")
 plt.ylabel("RMS")
@@ -166,11 +167,14 @@ plt.xlabel("RMS")
 plt.ylabel("Maximum amplitude")
 plt.show()
 """
-#np.save("Day 2 10 Time List", final_time_list)
+np.save("Day 2 10 Time List", final_time_list)
 #np.save("Day 2 10 RMS List", rms_list)
-np.save("Day 2 10 MAXAMP List", max_amp_list)
+#np.save("Day 2 10 MAXAMP List", max_amp_list)
 #np.save("Day 2 10 Variance List", var_list)
 
+data = np.load("Day 2 10 Time List.npy", 'r')
+
+print(data)
 """
 #total_blip_list plot
 plt.scatter(i_list, blip_list, label="Number of events at given time", c = 'r')

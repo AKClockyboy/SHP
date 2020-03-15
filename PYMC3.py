@@ -2,21 +2,20 @@ import sys
 import numpy as np
 import math
 
+import obspy
+from obspy.signal.trigger import classic_sta_lta
+from obspy.signal.trigger import plot_trigger
+from obspy.signal.trigger import pk_baer
+from obspy import UTCDateTime
+
+import matplotlib
 import matplotlib.pyplot as plt
 from matplotlib.dates import num2date, date2num, DateFormatter
 import datetime
-import numpy as np
 
 import theano
 import theano.tensor as T
-
-from pip._internal import main
-try:
-     import pymc3
-except:
-     from pip._internal import main
-     main(['install', 'pymc3'])
-     import pymc3
+import pymc3 as pm
 
 def logl_mol(spikes):
     #Simple Poisson process LL function
@@ -85,22 +84,16 @@ def exp_total(t, t0, params):
 #main code
 #
 
-fname='./RETUpicks.txt'
-picks_num = []
-with open(fname) as f:
-    for line in f:
-        if line.rstrip():
-            values = line.split('\n')
-            pick = float(values[0])
-            picks_num.append(pick)
+values = np.load("Day 2 10 Time List.npy", 'r')
 
-print(len(picks_num), 'picks extracted from file')
+print(len(values), 'picks extracted from file')
+print(values)
 
-start = date2num(datetime.datetime(2015, 11, 25, 0, 0, 0))
-end = date2num(datetime.datetime(2015, 12, 1, 0, 1, 0))
+start = obspy.UTCDateTime("1997-02-12T10:20:00")
+end  = obspy.UTCDateTime("1997-02-12T12:30:00")
 
-picks = np.array(picks_num)-start
-print(picks_num[0])
+picks = values
+print(picks[0])
 print(start)
 
 dt = 1./24.
@@ -171,10 +164,11 @@ ax1.set_xlim(0, bv[-1])
 ax1.axvline(t_forc, c='k', ls='--', label='$t_{forc}$')
 ax1.axvline(t_f, c='k', ls=':', label='$t_{0}$')
 fig.legend(loc=2, bbox_to_anchor = (0.6,0.7))
+plt.show()
+
 
 with mol_model:
     trace_mol = pm.sample(5000, chains=1, cores=4)
-
 n_bs = 500
 xs = np.arange(0, cat[-1], 0.01)
 
@@ -192,14 +186,14 @@ ax1.xaxis.set_ticks_position('bottom')
 ax1.yaxis.set_ticks_position('left')
 ax1.set_ylabel('Rate')
 ax1.set_ylim(0,max(freqs))
+plt.show()
+
 
 ax2 = ax1.twinx()
-
-
 for i in np.arange(n_bs):
     samp=int(i*5000/n_bs)
-    paras1 = [trace_mol['k'][samp], trace_mol['c'][samp], trace_mol['p'][samp]]
-    ax2.plot(xs+t_f, mol_total(xs, 0, paras1), 'k', alpha=0.01)
+paras1 = [trace_mol['k'][samp], trace_mol['c'][samp], trace_mol['p'][samp]]
+ax2.plot(xs+t_f, mol_total(xs, 0, paras1), 'k', alpha=0.01)
 ax2.plot(cat+t_f, np.arange(len(cat)), color='g', lw=1.5)
 ax2.yaxis.set_ticks_position('right')
 ax2.set_ylabel('Total events')
@@ -212,3 +206,4 @@ ax1.axvline(t_f, c='k', ls=':', label='$t_{0}$')
 #fig.legend(loc=2, bbox_to_anchor = (0.6,0.6))
 
 pm.plots.traceplot(trace_mol)
+plt.show()
