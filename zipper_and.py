@@ -114,6 +114,8 @@ plot_trigger(tr_filt, trig, 1.65, 1.61)
 
 n_picks = len(obspy.signal.trigger.trigger_onset(trig, 1.65, 1.61, max_len=9e+99))
 
+f= open("event_picks.txt","w+")
+
 max_amp_list = np.zeros(n_picks)
 
 rms_list = np.zeros(n_picks)
@@ -139,11 +141,15 @@ for pick in range(n_picks):
 
     final_time_list[pick] = mdates.date2num(start.datetime)
 
+    f.write("%10.8f\r\n" % final_time_list[pick])
+
     max_amp_list[pick] = np.absolute(event[0]).max()
 
     rms_list[pick] = np.sqrt(np.mean(np.square(event[0])))
 
     var_list[pick] = np.var(event[0])
+
+f.close()
 
 """
 #RMS Values Plotting
@@ -168,6 +174,7 @@ plt.ylabel("Maximum amplitude")
 plt.show()
 """
 np.save("Day 2 10 Time List", final_time_list)
+
 #np.save("Day 2 10 RMS List", rms_list)
 #np.save("Day 2 10 MAXAMP List", max_amp_list)
 #np.save("Day 2 10 Variance List", var_list)

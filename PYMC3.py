@@ -1,21 +1,12 @@
 import sys
-import numpy as np
-import math
 
-import obspy
-from obspy.signal.trigger import classic_sta_lta
-from obspy.signal.trigger import plot_trigger
-from obspy.signal.trigger import pk_baer
-from obspy import UTCDateTime
-
-import matplotlib
 import matplotlib.pyplot as plt
 from matplotlib.dates import num2date, date2num, DateFormatter
 import datetime
-
-import theano
-import theano.tensor as T
+import numpy as np
 import pymc3 as pm
+
+import theano.tensor as T
 
 def logl_mol(spikes):
     #Simple Poisson process LL function
@@ -84,16 +75,22 @@ def exp_total(t, t0, params):
 #main code
 #
 
-values = np.load("Day 2 10 Time List.npy", 'r')
+fname='./event_picks.txt'
+picks_num = []
+with open(fname) as f:
+    for line in f:
+        if line.rstrip():
+            values = line.split('\n')
+            pick = float(values[0])
+            picks_num.append(pick)
 
-print(len(values), 'picks extracted from file')
-print(values)
+print(len(picks_num), 'picks extracted from file')
 
-start = obspy.UTCDateTime("1997-02-12T10:20:00")
-end  = obspy.UTCDateTime("1997-02-12T12:30:00")
+start = date2num(datetime.datetime(1997, 2, 12, 10, 20, 0))
+end = date2num(datetime.datetime(1997, 2, 12, 12, 30, 0))
 
-picks = values
-print(picks[0])
+picks = np.array(picks_num)-start
+print(picks_num[0])
 print(start)
 
 dt = 1./24.
@@ -116,9 +113,7 @@ spikes = spikes[spikes<t_forc]
 t_js = np.hstack((0,spikes[:-1]))
 
 mol_model = pm.Model()
-
 with mol_model:
-
     #k = pm.Uniform('k', lower=250, upper=350)
     #c = pm.Uniform('c', lower=0, upper=8)
     #p = pm.Lognormal('p', mu= 1., tau=5.0)
@@ -186,14 +181,14 @@ ax1.xaxis.set_ticks_position('bottom')
 ax1.yaxis.set_ticks_position('left')
 ax1.set_ylabel('Rate')
 ax1.set_ylim(0,max(freqs))
-plt.show()
-
 
 ax2 = ax1.twinx()
+
+
 for i in np.arange(n_bs):
     samp=int(i*5000/n_bs)
-paras1 = [trace_mol['k'][samp], trace_mol['c'][samp], trace_mol['p'][samp]]
-ax2.plot(xs+t_f, mol_total(xs, 0, paras1), 'k', alpha=0.01)
+    paras1 = [trace_mol['k'][samp], trace_mol['c'][samp], trace_mol['p'][samp]]
+    ax2.plot(xs+t_f, mol_total(xs, 0, paras1), 'k', alpha=0.01)
 ax2.plot(cat+t_f, np.arange(len(cat)), color='g', lw=1.5)
 ax2.yaxis.set_ticks_position('right')
 ax2.set_ylabel('Total events')
